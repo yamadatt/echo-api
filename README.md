@@ -1,6 +1,6 @@
 # Echo API
 
-AWS LambdaとAPI Gatewayを使用したHTTPエコーサービスです。受信したHTTPリクエストの詳細情報をJSON形式で返却します。
+AWS LambdaとAPI Gatewayを使用したHTTPエコーサービスです。受信したHTTPリクエストの詳細情報∂をJSON形式で返却します。
 
 ## 概要
 
@@ -60,10 +60,15 @@ AWS LambdaとAPI Gatewayを使用したHTTPエコーサービスです。受信�
 ## 必要な前提条件
 
 - Go 1.21以上
+  - https://go.dev/ 
 - Docker
+  - https://www.docker.com/ja-jp/
 - AWS CLI
+  - https://docs.aws.amazon.com/ja_jp/cli/v1/userguide/cli-chap-install.html
 - SAM CLI
-- jq (テスト用、オプション)
+  - https://docs.aws.amazon.com/ja_jp/serverless-application-model/latest/developerguide/install-sam-cli.html
+- jq (テスト用、オプション 無くてもかまいmせん。)
+  - https://jqlang.org/
 
 ## セットアップ
 
@@ -111,12 +116,6 @@ export API_URL=https://your-api-id.execute-api.ap-northeast-1.amazonaws.com/prod
 aws logs tail /aws/lambda/echo-api-prodxxxxxxx --follow
 ```
 
-### API Gatewayのログ
-
-```bash
-make logs-api
-```
-
 ## プロジェクト構造
 
 ```
@@ -148,44 +147,6 @@ echo-api/
 └── README.md
 ```
 
-## トラブルシューティング
-
-### よくある問題
-
-1. **ECRログインエラー**
-   ```bash
-   aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com
-   ```
-
-2. **IAM権限エラー**
-   - Lambda実行権限
-   - ECRアクセス権限
-   - CloudFormation操作権限が必要
-
-3. **SAM buildエラー**
-   ```bash
-   # キャッシュをクリア
-   make clean
-   make build
-   ```
-
-4. **API Gateway統合エラー**
-   - プロキシ統合が正しく設定されていることを確認
-   - OpenAPI定義でhttpMethod: POSTが指定されていることを確認
-
-5. **コンテナイメージが大きい場合**
-   - 軽量版Dockerfileを使用（マルチステージビルド）
-   - ECRプッシュ時間を短縮
-
-### ログレベルの変更
-
-環境変数でログレベルを調整できます：
-
-```bash
-# template.yamlまたはsamconfig.tomlで設定
-LOG_LEVEL=DEBUG  # DEBUG, INFO, WARN, ERROR
-```
-
 ## 技術仕様
 
 ### アーキテクチャ
@@ -195,7 +156,6 @@ LOG_LEVEL=DEBUG  # DEBUG, INFO, WARN, ERROR
 - **CloudWatch**: ログとモニタリング
 
 ### パフォーマンス
-- **コンテナサイズ**: 331MB（マルチステージビルド最適化）
 - **メモリ**: 128MB
 - **タイムアウト**: 30秒
 - **コールドスタート**: 通常1-2秒
@@ -211,23 +171,4 @@ LOG_LEVEL=DEBUG  # DEBUG, INFO, WARN, ERROR
 Base URL: https://o5sqxqj3e2.execute-api.ap-northeast-1.amazonaws.com/prod/
 ```
 
-### 利用可能なパス
-- `GET /test` - テスト用エンドポイント
-- `POST /api/echo` - エコー専用エンドポイント
-- `ANY /{proxy+}` - すべてのパスに対応
-
-## ライセンス
-
-MIT License
-
-## 貢献
-
-プルリクエストやIssueの投稿をお待ちしています。
-
-## サポート
-
-問題が発生した場合は、以下を確認してください：
-
-1. CloudWatch Logsでのエラーログ
-2. API GatewayとLambda関数の設定
-3. IAM権限の確認
+∂
