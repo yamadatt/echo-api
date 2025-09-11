@@ -1,0 +1,11 @@
+# Lambda Runtime Interface Client対応のイメージ
+FROM public.ecr.aws/lambda/provided:al2
+
+# ローカルでビルドしたバイナリを適切な場所にコピー
+COPY bootstrap /var/runtime/bootstrap
+
+# 実行権限を設定
+RUN chmod +x /var/runtime/bootstrap
+
+# Lambda関数のハンドラーを設定
+CMD ["bootstrap"]

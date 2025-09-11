@@ -1,0 +1,27 @@
+# Git関連
+.git
+.gitignore
+
+# ビルド関連
+.DS_Store
+*.log
+
+# テスト関連
+*_test.go
+tests/
+
+# ドキュメント関連
+*.md
+.kiro/
+
+# IDE関連
+.vscode/
+.idea/
+
+# AWS関連
+.aws/
+samconfig.toml
+
+# 一時ファイル
+tmp/
+temp/

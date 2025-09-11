@@ -1,0 +1,155 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  echo-api
+  
+  AWS Lambda function that echoes HTTP requests back as JSON responses.
+
+# Global settings for all serverless functions
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 128
+    Architectures:
+      - x86_64
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues: [prod]
+    Description: Environment name
+
+Resources:
+  # API Gateway Account設定 - CloudWatch Logs連携用
+  ApiGatewayAccount:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !GetAtt EchoApiGatewayRole.Arn
+
+  # Lambda function
+  EchoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "HTTP echo service that returns request details as JSON"
+      PackageType: Image
+      ImageConfig:
+        Command: ["bootstrap"]
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          LOG_LEVEL: INFO
+      Events:
+        # API Gateway event for all HTTP methods and paths
+        EchoApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EchoApiGateway
+            Path: /{proxy+}
+            Method: ANY
+        # Root path
+        EchoApiRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EchoApiGateway
+            Path: /
+            Method: ANY
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: .
+      DockerTag: echo-api-lambda
+
+  # API Gateway実行ロール
+  EchoApiGatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+
+  # API Gateway
+  EchoApiGateway:
+    Type: AWS::Serverless::Api
+    DependsOn: EchoApiGatewayRole
+    Properties:
+      StageName: !Ref Environment
+      Description: "API Gateway for Echo service"
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
+      AccessLogSetting:
+        DestinationArn: !GetAtt EchoApiGatewayLogGroup.Arn
+        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency,"xrayTraceId":"$context.xrayTraceId","integrationRequestId":"$context.integration.requestId","functionResponseStatus":"$context.integration.status","integrationLatency":"$context.integration.latency","integrationServiceStatus":"$context.integration.integrationStatus","ip":"$context.identity.sourceIp","userAgent":"$context.identity.userAgent"}'
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          LoggingLevel: INFO
+          DataTraceEnabled: true
+          MetricsEnabled: true
+          ThrottlingRateLimit: 100
+          ThrottlingBurstLimit: 50
+      DefinitionBody:
+        openapi: 3.0.1
+        info:
+          title: Echo API
+        paths:
+          /{proxy+}:
+            x-amazon-apigateway-any-method:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EchoFunction.Arn}/invocations"
+                responses:
+                  default:
+                    statusCode: 200
+          /:
+            x-amazon-apigateway-any-method:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EchoFunction.Arn}/invocations"
+                responses:
+                  default:
+                    statusCode: 200
+
+  # CloudWatch Log Group for Lambda function
+  EchoFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+
+  # CloudWatch Log Group for API Gateway
+  EchoApiGatewayLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+
+Outputs:
+  # API Gateway endpoint URL
+  EchoApiUrl:
+    Description: "API Gateway endpoint URL for Echo function"
+    Value: !Sub "https://${EchoApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
+    Export:
+      Name: !Sub "${AWS::StackName}-EchoApiUrl"
+
+  # Lambda function ARN
+  EchoFunctionArn:
+    Description: "Echo Lambda Function ARN"
+    Value: !GetAtt EchoFunction.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-EchoFunctionArn"
+
+  # API Gateway ID
+  EchoApiGatewayId:
+    Description: "API Gateway ID"
+    Value: !Ref EchoApiGateway
+    Export:
+      Name: !Sub "${AWS::StackName}-EchoApiGatewayId"
