@@ -67,17 +67,8 @@ AWS LambdaとAPI Gatewayを使用したHTTPエコーサービスです。受信�
   - https://docs.aws.amazon.com/ja_jp/cli/v1/userguide/cli-chap-install.html
 - SAM CLI
   - https://docs.aws.amazon.com/ja_jp/serverless-application-model/latest/developerguide/install-sam-cli.html
-- jq (テスト用、オプション 無くてもかまいmせん。)
+- jq (テスト用、オプション 無くてもかまいません。)
   - https://jqlang.org/
-
-## セットアップ
-
-### 1. 依存関係のインストール
-
-```bash
-make install-tools
-```
-
 
 
 ## ビルドとデプロイ
@@ -94,6 +85,7 @@ sam build
 sam deploy
 
 ```
+
 
 
 ### デプロイ後のテスト
