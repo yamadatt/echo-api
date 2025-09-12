@@ -75,7 +75,7 @@ AWS LambdaとAPI Gatewayを使用したHTTPエコーサービスです。受信�
 ### Lambda関数のビルド
 
 ```bash
-sam build
+sam build --use-container
 ```
 
 ### デプロイ
