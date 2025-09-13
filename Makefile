@@ -76,11 +76,11 @@ install-tools: ## 開発ツールをインストール
 
 # SAM用ビルドターゲット
 build-EchoFunction:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(ARTIFACTS_DIR)/bootstrap ./cmd/lambda
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o $(ARTIFACTS_DIR)/bootstrap ./cmd/lambda
 
 # Docker関連のターゲット
 docker-build: ## Dockerイメージをビルド
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-w -s' -o bootstrap ./cmd/lambda
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags '-w -s' -o bootstrap ./cmd/lambda
 	docker build -t echo-api-lambda:latest .
 
 docker-run: ## ローカルでDockerコンテナをテスト実行

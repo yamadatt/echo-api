@@ -7,6 +7,12 @@
 
 ## 🎯 最も使用頻度の高いテスト
 
+logのtail
+
+```bash
+sam logs --name EchoFunction --stack-name echo-api-prod --tail
+```
+
 ### 1. 超簡単テスト
 ```bash
 # 最もシンプルなGET
